@@ -14,34 +14,34 @@ import SwiftUI
 public struct PDFMetadata {
 
     /// The name of the document’s author.
-    private let author: String?
+    internal let author: String?
 
     /// The name of the application or process that created the PDF.
-    private let creator: String?
+    internal let creator: String?
 
     /// The title of the PDF document.
-    private let title: String?
+    internal let title: String?
 
     /// A brief description or subject of the document’s content.
-    private let subject: String?
+    internal let subject: String?
 
     /// A list of keywords associated with the document, used for indexing or searching.
-    private let keywords: String?
+    internal let keywords: String?
 
     /// The password required for full access to the document, including permission changes.
-    private let ownerPassword: String?
+    internal let ownerPassword: String?
 
     /// The password required for opening the document with restricted access.
-    private let userPassword: String?
+    internal let userPassword: String?
 
     /// Indicates whether the PDF allows printing when opened.
-    private let allowsPrinting: Bool?
+    internal let allowsPrinting: Bool?
 
     /// Indicates whether the PDF allows content copying when opened.
-    private let allowsCopying: Bool?
+    internal let allowsCopying: Bool?
 
     /// The encryption key length (in bits) used to secure the PDF.
-    private let encryptionKeyLength: Int?
+    internal let encryptionKeyLength: Int?
 
     /// Creates a new PDF metadata configuration with optional descriptive and security properties.
     ///

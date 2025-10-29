@@ -77,8 +77,8 @@ extension PDFManager {
             return nil
         }
 
-        let url = generateTempURL()
         let metadata = metadata ?? PDFMetadata()
+        let url = generateTempURL(fileName: metadata.title)
         var box = CGRect(origin: .zero, size: config.paperSize)
 
         guard let pdf = createPDFContext(url: url, box: &box, metadata: metadata) else {
@@ -121,14 +121,33 @@ extension PDFManager {
 
     // MARK: URL Generation
 
-    /// Creates a unique temporary file URL for the generated PDF.
+    /// Generates a temporary file URL for a PDF document.
     ///
-    /// - Returns: A temporary `.pdf` file URL.
-    internal func generateTempURL() -> URL {
-        let url = URL.temporaryDirectory.appendingPathComponent(
-            "\(UUID().uuidString).pdf",
-            conformingTo: .pdf
-        )
+    /// - Behaviour:
+    ///   - If a `fileName` is provided, it is sanitised for filesystem safety by replacing invalid
+    ///   characters and trimming whitespace.
+    ///   - If `fileName` is `nil` or empty after sanitisation, a random UUID string is used
+    ///   instead to ensure uniqueness.
+    ///   - The `.pdf` file extension is automatically appended.
+    ///   - The file is placed in the system’s temporary directory.
+    ///   - Logs the resolved path for diagnostic purposes.
+    ///
+    /// - Parameter fileName: An optional base name for the file. If omitted or invalid, a UUID is
+    /// used as the filename.
+    ///
+    /// - Returns: A temporary file `URL` ending in `.pdf`, safe for use in file creation.
+    ///
+    /// - Note: The file is not created on disk by this method—only the URL is returned.
+    internal func generateTempURL(fileName: String? = nil) -> URL {
+        let safeName: String
+        if let name = fileName?.sanitizeURL, !name.isEmpty {
+            safeName = name
+        } else {
+            safeName = UUID().uuidString
+        }
+
+        let fullName = "\(safeName).pdf"
+        let url = URL.temporaryDirectory.appendingPathComponent(fullName, conformingTo: .pdf)
         logger.debug("Generated temporary PDF path: \(url.path(percentEncoded: false))")
         return url
     }
