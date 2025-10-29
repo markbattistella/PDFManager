@@ -6,49 +6,53 @@
 
 import SwiftUI
 
-// MARK: - Renderable
-
-/// A type that can be rendered as part of a PDF document.
-///
-/// `PDFRenderable` combines the requirements of SwiftUI’s `View` protocol and `Hashable`,
-/// ensuring that conforming types can both render visual content and be uniquely identified
-/// within a PDF layout.
-public protocol PDFRenderable: View, Hashable {}
-
 // MARK: - Header
 
-/// A type representing the header section of a PDF page.
-///
-/// `PDFHeader` conforms to `PDFRenderable` and provides metadata for pagination. Conforming types
-/// define the content displayed at the top of each PDF page.
-public protocol PDFHeader: PDFRenderable {
+/// A view type that defines the header section for each page in a generated PDF. Conforming types
+/// render content displayed at the top of each PDF page.
+public protocol PDFHeader: View {
 
-    /// The index of the current page being rendered.
+    /// The index of the page currently being rendered in the PDF output.
+    ///
+    /// Use this value to display page-specific information, such as a page number or contextual
+    /// header content.
     var currentPage: Int { get }
 
-    /// The total number of pages in the PDF document.
+    /// The total number of pages in the generated PDF document.
+    ///
+    /// Use this value in conjunction with `currentPage` to display pagination details, for
+    /// example, “Page 1 of 10”.
     var totalPages: Int { get }
+}
+
+extension PDFHeader {
+
+    /// Default implementation returning `0` when no page context is provided.
+    var currentPage: Int { 0 }
+
+    /// Default implementation returning `0` when total page count is unavailable.
+    var totalPages: Int { 0 }
 }
 
 // MARK: - Body content
 
-/// A type representing the main content section of a PDF page.
-///
-/// `PDFContent` conforms to `PDFRenderable` and defines the primary body area of
-/// a generated PDF page.
-public protocol PDFContent: PDFRenderable {}
+/// A view type that defines the main content section for a page in a generated PDF. Conforming
+/// types render the core page body content.
+public protocol PDFContent: View {}
 
 // MARK: - Footer
 
-/// A type representing the footer section of a PDF page.
-///
-/// `PDFFooter` conforms to `PDFRenderable` and provides metadata for pagination.
-/// Conforming types define the content displayed at the bottom of each PDF page.
-public protocol PDFFooter: PDFRenderable {
+/// A view type that defines the footer section for each page in a generated PDF. Conforming
+/// types render content displayed at the bottom of each PDF page.
+public protocol PDFFooter: View {
 
-    /// The index of the current page being rendered.
+    /// The index of the page currently being rendered in the PDF output.
+    ///
+    /// Use this value to show dynamic or contextual footer content per page.
     var currentPage: Int { get }
 
-    /// The total number of pages in the PDF document.
+    /// The total number of pages in the generated PDF document.
+    ///
+    /// Use this value to render pagination or document-wide context information.
     var totalPages: Int { get }
 }
