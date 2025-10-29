@@ -61,7 +61,7 @@ extension PDFManager {
     ///   - footer: A view builder returning the footer for each page. Receives the current and total page numbers.
     ///
     /// - Returns: The URL of the generated PDF file, or `nil` if the export fails.
-    public func export<T: PDFRenderable, H: PDFHeader, F: PDFFooter, C: PDFContent>(
+    public func export<T: Identifiable, H: PDFHeader, F: PDFFooter, C: PDFContent>(
         _ items: [T],
         config: PDFConfiguration,
         metadata: PDFMetadata? = nil,
@@ -199,7 +199,7 @@ extension PDFManager {
     ///   - usableHeight: The maximum vertical space for content.
     ///   - content: A view builder used to measure content height.
     /// - Returns: The maximum number of items that fit within the given height constraint.
-    internal func maxItemsThatFitOnPage<T: PDFRenderable, C: PDFContent>(
+    internal func maxItemsThatFitOnPage<T: Identifiable, C: PDFContent>(
         for items: ArraySlice<T>,
         usableWidth: CGFloat,
         usableHeight: CGFloat,
@@ -243,7 +243,7 @@ extension PDFManager {
     ///   - availableHeight: The vertical space available for each page’s content.
     ///   - content: A view builder used for measuring content height.
     /// - Returns: A two-dimensional array where each inner array represents one page of content.
-    internal func paginateItems<T: PDFRenderable, C: PDFContent>(
+    internal func paginateItems<T: Identifiable, C: PDFContent>(
         _ items: [T],
         availableWidth: CGFloat,
         availableHeight: CGFloat,
@@ -283,7 +283,7 @@ extension PDFManager {
     ///   - header: A view builder rendering each page’s header.
     ///   - content: A view builder rendering the page’s main content.
     ///   - footer: A view builder rendering each page’s footer.
-    internal func renderPages<T: PDFRenderable, H: PDFHeader, F: PDFFooter, C: PDFContent>(
+    internal func renderPages<T: Identifiable, H: PDFHeader, F: PDFFooter, C: PDFContent>(
         pages: [[T]],
         pdf: CGContext,
         config: PDFConfiguration,
@@ -323,7 +323,7 @@ extension PDFManager {
     ///   - header: A view builder rendering the header.
     ///   - content: A view builder rendering the page’s main content.
     ///   - footer: A view builder rendering the footer.
-    internal func renderSinglePage<T: PDFRenderable, H: PDFHeader, F: PDFFooter, C: PDFContent>(
+    internal func renderSinglePage<T: Identifiable, H: PDFHeader, F: PDFFooter, C: PDFContent>(
         pdf: CGContext,
         items: [T],
         currentPage: Int,
