@@ -56,7 +56,7 @@ public struct PDFMetadata {
     ///   - allowsPrinting: A Boolean indicating whether printing is permitted.
     ///   - allowsCopying: A Boolean indicating whether content copying is permitted.
     ///   - encryptionKeyLength: The bit length of the encryption key.
-    init(
+    public init(
         author: String? = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String,
         creator: String? = "PDFManager by Mark Battistella",
         title: String? = nil,
