@@ -29,3 +29,54 @@ public enum PDFExportError: Error {
     /// This is typically thrown if page generation or drawing could not complete.
     case renderingFailed
 }
+
+extension PDFExportError: LocalizedError {
+
+    /// A short, human-readable title suitable for use in alerts or logs.
+    public var errorTitle: String {
+        switch self {
+            case .noItems:
+                return "No Entries Found"
+            case .contextCreationFailed:
+                return "PDF Context Error"
+            case .renderingFailed:
+                return "Rendering Error"
+        }
+    }
+
+    /// A descriptive message explaining the error.
+    public var errorDescription: String? {
+        switch self {
+            case .noItems:
+                return "There are no records available in the selected date range. Try choosing a different date or range to export."
+            case .contextCreationFailed:
+                return "The PDF export could not start because the rendering context failed to initialise."
+            case .renderingFailed:
+                return "An unexpected problem occurred while generating or paginating the PDF document."
+        }
+    }
+
+    /// A short label suitable for developer logs or analytics.
+    public var failureReason: String? {
+        switch self {
+            case .noItems:
+                return "Empty data set"
+            case .contextCreationFailed:
+                return "Failed to create PDF context"
+            case .renderingFailed:
+                return "Rendering or pagination failure"
+        }
+    }
+
+    /// Suggested recovery steps for the user, if applicable.
+    public var recoverySuggestion: String? {
+        switch self {
+            case .noItems:
+                return "Select a different date range that contains entries."
+            case .contextCreationFailed:
+                return "Check file permissions or try exporting again."
+            case .renderingFailed:
+                return "Try re-exporting or restarting the app."
+        }
+    }
+}
