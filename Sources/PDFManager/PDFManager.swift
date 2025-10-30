@@ -68,13 +68,13 @@ extension PDFManager {
         @ViewBuilder header: @escaping (_ currentPage: Int, _ totalPages: Int) -> H,
         @ViewBuilder content: @escaping (_ items: [T]) -> C,
         @ViewBuilder footer: @escaping (_ currentPage: Int, _ totalPages: Int) -> F
-    ) -> URL? {
-
-        logger.info("Starting PDF export with \(items.count) items, paper size: \(config.paperSize.width)x\(config.paperSize.height)")
+    ) throws -> URL {
+        logger.info("Starting PDF export with \(items.count) items")
+        logger.info("Paper size: \(config.paperSize.width)x\(config.paperSize.height)")
 
         guard !items.isEmpty else {
-            logger.error("No items to export; skipping PDF generation.")
-            return nil
+            logger.error("No items to export")
+            throw PDFExportError.noItems
         }
 
         let metadata = metadata ?? PDFMetadata()
@@ -83,7 +83,7 @@ extension PDFManager {
 
         guard let pdf = createPDFContext(url: url, box: &box, metadata: metadata) else {
             logger.error("Failed to create PDF context")
-            return nil
+            throw PDFExportError.contextCreationFailed
         }
 
         let layout = calculatePageLayout(
@@ -98,6 +98,11 @@ extension PDFManager {
             availableHeight: layout.contentHeight,
             content: content
         )
+
+        guard !pages.isEmpty else {
+            logger.error("Pagination failed to produce pages")
+            throw PDFExportError.renderingFailed
+        }
 
         renderPages(
             pages: pages,
