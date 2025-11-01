@@ -39,8 +39,8 @@ extension PDFHeader {
 /// A view type that defines the main content section for a page in a generated PDF. Conforming
 /// types render the core page body content.
 public protocol PDFContent: View {
-    associatedtype Data: Identifiable
-    var items: [Data] { get }
+    associatedtype T: Identifiable
+    init(items: [T])
 }
 
 // MARK: - Footer
