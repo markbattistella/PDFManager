@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "PDFManager",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v18),
         .macOS(.v15),
@@ -24,7 +25,7 @@ let package = Package(
         .target(
             name: "PDFManager",
             dependencies: ["SimpleLogger"],
-            swiftSettings: [.enableExperimentalFeature("StrictConcurrency")]
+            resources: [.process("Resources")]
         )
     ]
 )

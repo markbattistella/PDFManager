@@ -36,11 +36,22 @@ extension PDFExportError: LocalizedError {
     public var errorTitle: String {
         switch self {
             case .noItems:
-                return "No Entries Found"
+                return String(
+                    localized: "No Entries Found",
+                    comment: "Error title shown when no data is available to export."
+                )
+
             case .contextCreationFailed:
-                return "PDF Context Error"
+                return String(
+                    localized: "PDF Context Error",
+                    comment: "Error title shown when the PDF rendering context could not be created."
+                )
+
             case .renderingFailed:
-                return "Rendering Error"
+                return String(
+                    localized: "Rendering Error",
+                    comment: "Error title shown when PDF rendering or pagination fails."
+                )
         }
     }
 
@@ -48,11 +59,22 @@ extension PDFExportError: LocalizedError {
     public var errorDescription: String? {
         switch self {
             case .noItems:
-                return "There are no records available in the selected date range. Try choosing a different date or range to export."
+                return String(
+                    localized: "There are no records available in the selected date range. Try choosing a different date or range to export.",
+                    comment: "Detailed explanation shown when the user tries to export with no data."
+                )
+
             case .contextCreationFailed:
-                return "The PDF export could not start because the rendering context failed to initialise."
+                return String(
+                    localized: "The PDF export could not start because the rendering context failed to initialise.",
+                    comment: "Detailed explanation shown when the PDF context cannot be created."
+                )
+
             case .renderingFailed:
-                return "An unexpected problem occurred while generating or paginating the PDF document."
+                return String(
+                    localized: "An unexpected problem occurred while generating or paginating the PDF document.",
+                    comment: "Detailed explanation shown when PDF rendering or pagination fails."
+                )
         }
     }
 
@@ -60,11 +82,22 @@ extension PDFExportError: LocalizedError {
     public var failureReason: String? {
         switch self {
             case .noItems:
-                return "Empty data set"
+                return String(
+                    localized: "Empty data set",
+                    comment: "Technical reason logged when export failed due to no data."
+                )
+
             case .contextCreationFailed:
-                return "Failed to create PDF context"
+                return String(
+                    localized: "Failed to create PDF context",
+                    comment: "Technical reason logged when PDF context creation fails."
+                )
+
             case .renderingFailed:
-                return "Rendering or pagination failure"
+                return String(
+                    localized: "Rendering or pagination failure",
+                    comment: "Technical reason logged when rendering or pagination fails."
+                )
         }
     }
 
@@ -72,11 +105,22 @@ extension PDFExportError: LocalizedError {
     public var recoverySuggestion: String? {
         switch self {
             case .noItems:
-                return "Select a different date range that contains entries."
+                return String(
+                    localized: "Select a different date range that contains entries.",
+                    comment: "Suggestion shown when no data is available for export."
+                )
+
             case .contextCreationFailed:
-                return "Check file permissions or try exporting again."
+                return String(
+                    localized: "Check file permissions or try exporting again.",
+                    comment: "Suggestion shown when PDF context could not be created."
+                )
+
             case .renderingFailed:
-                return "Try re-exporting or restarting the app."
+                return String(
+                    localized: "Try re-exporting or restarting the app.",
+                    comment: "Suggestion shown when PDF rendering fails."
+                )
         }
     }
 }

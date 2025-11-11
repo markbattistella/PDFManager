@@ -9,6 +9,12 @@ import SimpleLogger
 import Observation
 import UniformTypeIdentifiers
 
+/// The bundle associated with the current Swift Package module.
+///
+/// Use this property to access resources (such as assets, storyboards, or JSON files) included in
+/// the package target’s bundle.
+public let module: Bundle = .module
+
 /// A manager responsible for generating and exporting PDF documents from SwiftUI views.
 ///
 /// `PDFManager` handles layout calculation, pagination, rendering, and file export for structured

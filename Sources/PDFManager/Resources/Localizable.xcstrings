@@ -1,0 +1,42 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "An unexpected problem occurred while generating or paginating the PDF document." : {
+      "comment" : "Detailed explanation shown when PDF rendering or pagination fails."
+    },
+    "Check file permissions or try exporting again." : {
+      "comment" : "Suggestion shown when PDF context could not be created."
+    },
+    "Empty data set" : {
+      "comment" : "Technical reason logged when export failed due to no data."
+    },
+    "Failed to create PDF context" : {
+      "comment" : "Technical reason logged when PDF context creation fails."
+    },
+    "No Entries Found" : {
+      "comment" : "Error title shown when no data is available to export."
+    },
+    "PDF Context Error" : {
+      "comment" : "Error title shown when the PDF rendering context could not be created."
+    },
+    "Rendering Error" : {
+      "comment" : "Error title shown when PDF rendering or pagination fails."
+    },
+    "Rendering or pagination failure" : {
+      "comment" : "Technical reason logged when rendering or pagination fails."
+    },
+    "Select a different date range that contains entries." : {
+      "comment" : "Suggestion shown when no data is available for export."
+    },
+    "The PDF export could not start because the rendering context failed to initialise." : {
+      "comment" : "Detailed explanation shown when the PDF context cannot be created."
+    },
+    "There are no records available in the selected date range. Try choosing a different date or range to export." : {
+      "comment" : "Detailed explanation shown when the user tries to export with no data."
+    },
+    "Try re-exporting or restarting the app." : {
+      "comment" : "Suggestion shown when PDF rendering fails."
+    }
+  },
+  "version" : "1.1"
+}
