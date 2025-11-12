@@ -1,42 +1,186 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "An unexpected problem occurred while generating or paginating the PDF document." : {
-      "comment" : "Detailed explanation shown when PDF rendering or pagination fails."
+  "sourceLanguage": "en",
+  "strings": {
+    "An unexpected problem occurred while generating or paginating the PDF document.": {
+      "comment": "Detailed explanation shown when PDF rendering or pagination fails.",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Beim Erstellen oder Seitenumbruch des PDF-Dokuments ist ein unerwartetes Problem aufgetreten." }},
+        "es": { "stringUnit": { "state": "translated", "value": "Se produjo un problema inesperado al generar o paginar el documento PDF." }},
+        "fr": { "stringUnit": { "state": "translated", "value": "Un problème inattendu est survenu lors de la génération ou de la pagination du document PDF." }},
+        "it": { "stringUnit": { "state": "translated", "value": "Si è verificato un problema imprevisto durante la generazione o l’impaginazione del documento PDF." }},
+        "ja": { "stringUnit": { "state": "translated", "value": "PDF ドキュメントの生成またはページ付け中に予期しない問題が発生しました。" }},
+        "ko": { "stringUnit": { "state": "translated", "value": "PDF 문서를 생성하거나 페이지를 매길 때 예기치 않은 문제가 발생했습니다." }},
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Ocorreu um problema inesperado ao gerar ou paginar o documento PDF." }},
+        "ru": { "stringUnit": { "state": "translated", "value": "Произошла непредвиденная ошибка при создании или разбиении PDF-документа на страницы." }},
+        "uk": { "stringUnit": { "state": "translated", "value": "Під час створення або розбиття PDF-документа на сторінки сталася неочікувана помилка." }},
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "生成或分页 PDF 文档时发生意外问题。" }}
+      }
     },
-    "Check file permissions or try exporting again." : {
-      "comment" : "Suggestion shown when PDF context could not be created."
+    "Check file permissions or try exporting again.": {
+      "comment": "Suggestion shown when PDF context could not be created.",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Überprüfe die Dateiberechtigungen oder versuche den Export erneut." }},
+        "es": { "stringUnit": { "state": "translated", "value": "Verifica los permisos del archivo o intenta exportar nuevamente." }},
+        "fr": { "stringUnit": { "state": "translated", "value": "Vérifiez les autorisations du fichier ou réessayez l’exportation." }},
+        "it": { "stringUnit": { "state": "translated", "value": "Controlla le autorizzazioni del file o prova a esportare di nuovo." }},
+        "ja": { "stringUnit": { "state": "translated", "value": "ファイルのアクセス権を確認するか、もう一度エクスポートしてみてください。" }},
+        "ko": { "stringUnit": { "state": "translated", "value": "파일 권한을 확인하거나 다시 내보내기를 시도하세요." }},
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Verifique as permissões do arquivo ou tente exportar novamente." }},
+        "ru": { "stringUnit": { "state": "translated", "value": "Проверьте разрешения на файл или попробуйте выполнить экспорт снова." }},
+        "uk": { "stringUnit": { "state": "translated", "value": "Перевірте дозволи файлу або спробуйте експортувати ще раз." }},
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "检查文件权限或重试导出。" }}
+      }
     },
-    "Empty data set" : {
-      "comment" : "Technical reason logged when export failed due to no data."
+    "Empty data set": {
+      "comment": "Technical reason logged when export failed due to no data.",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Leerer Datensatz" }},
+        "es": { "stringUnit": { "state": "translated", "value": "Conjunto de datos vacío" }},
+        "fr": { "stringUnit": { "state": "translated", "value": "Jeu de données vide" }},
+        "it": { "stringUnit": { "state": "translated", "value": "Set di dati vuoto" }},
+        "ja": { "stringUnit": { "state": "translated", "value": "データが空です" }},
+        "ko": { "stringUnit": { "state": "translated", "value": "빈 데이터 세트" }},
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Conjunto de dados vazio" }},
+        "ru": { "stringUnit": { "state": "translated", "value": "Пустой набор данных" }},
+        "uk": { "stringUnit": { "state": "translated", "value": "Порожній набір даних" }},
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "空数据集" }}
+      }
     },
-    "Failed to create PDF context" : {
-      "comment" : "Technical reason logged when PDF context creation fails."
+    "Failed to create PDF context": {
+      "comment": "Technical reason logged when PDF context creation fails.",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "PDF-Kontext konnte nicht erstellt werden" }},
+        "es": { "stringUnit": { "state": "translated", "value": "Error al crear el contexto PDF" }},
+        "fr": { "stringUnit": { "state": "translated", "value": "Échec de la création du contexte PDF" }},
+        "it": { "stringUnit": { "state": "translated", "value": "Creazione del contesto PDF non riuscita" }},
+        "ja": { "stringUnit": { "state": "translated", "value": "PDF コンテキストの作成に失敗しました" }},
+        "ko": { "stringUnit": { "state": "translated", "value": "PDF 컨텍스트를 생성하지 못했습니다." }},
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Falha ao criar o contexto de PDF" }},
+        "ru": { "stringUnit": { "state": "translated", "value": "Не удалось создать контекст PDF" }},
+        "uk": { "stringUnit": { "state": "translated", "value": "Не вдалося створити контекст PDF" }},
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "无法创建 PDF 上下文" }}
+      }
     },
-    "No Entries Found" : {
-      "comment" : "Error title shown when no data is available to export."
+    "No Entries Found": {
+      "comment": "Error title shown when no data is available to export.",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Keine Einträge gefunden" }},
+        "es": { "stringUnit": { "state": "translated", "value": "No se encontraron registros" }},
+        "fr": { "stringUnit": { "state": "translated", "value": "Aucune entrée trouvée" }},
+        "it": { "stringUnit": { "state": "translated", "value": "Nessuna voce trovata" }},
+        "ja": { "stringUnit": { "state": "translated", "value": "エントリが見つかりません" }},
+        "ko": { "stringUnit": { "state": "translated", "value": "항목을 찾을 수 없습니다." }},
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Nenhuma entrada encontrada" }},
+        "ru": { "stringUnit": { "state": "translated", "value": "Записи не найдены" }},
+        "uk": { "stringUnit": { "state": "translated", "value": "Записи не знайдено" }},
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "未找到条目" }}
+      }
     },
-    "PDF Context Error" : {
-      "comment" : "Error title shown when the PDF rendering context could not be created."
+    "PDF Context Error": {
+      "comment": "Error title shown when the PDF rendering context could not be created.",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "PDF-Kontextfehler" }},
+        "es": { "stringUnit": { "state": "translated", "value": "Error de contexto PDF" }},
+        "fr": { "stringUnit": { "state": "translated", "value": "Erreur de contexte PDF" }},
+        "it": { "stringUnit": { "state": "translated", "value": "Errore contesto PDF" }},
+        "ja": { "stringUnit": { "state": "translated", "value": "PDF コンテキストエラー" }},
+        "ko": { "stringUnit": { "state": "translated", "value": "PDF 컨텍스트 오류" }},
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Erro de contexto de PDF" }},
+        "ru": { "stringUnit": { "state": "translated", "value": "Ошибка контекста PDF" }},
+        "uk": { "stringUnit": { "state": "translated", "value": "Помилка контексту PDF" }},
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "PDF 上下文错误" }}
+      }
     },
-    "Rendering Error" : {
-      "comment" : "Error title shown when PDF rendering or pagination fails."
+    "Rendering Error": {
+      "comment": "Error title shown when PDF rendering or pagination fails.",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Renderfehler" }},
+        "es": { "stringUnit": { "state": "translated", "value": "Error de renderizado" }},
+        "fr": { "stringUnit": { "state": "translated", "value": "Erreur de rendu" }},
+        "it": { "stringUnit": { "state": "translated", "value": "Errore di rendering" }},
+        "ja": { "stringUnit": { "state": "translated", "value": "レンダリングエラー" }},
+        "ko": { "stringUnit": { "state": "translated", "value": "렌더링 오류" }},
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Erro de renderização" }},
+        "ru": { "stringUnit": { "state": "translated", "value": "Ошибка визуализации" }},
+        "uk": { "stringUnit": { "state": "translated", "value": "Помилка рендерингу" }},
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "渲染错误" }}
+      }
     },
-    "Rendering or pagination failure" : {
-      "comment" : "Technical reason logged when rendering or pagination fails."
+    "Rendering or pagination failure": {
+      "comment": "Technical reason logged when rendering or pagination fails.",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Fehler beim Rendern oder Seitenumbruch" }},
+        "es": { "stringUnit": { "state": "translated", "value": "Fallo en el renderizado o la paginación" }},
+        "fr": { "stringUnit": { "state": "translated", "value": "Échec du rendu ou de la pagination" }},
+        "it": { "stringUnit": { "state": "translated", "value": "Errore di rendering o impaginazione" }},
+        "ja": { "stringUnit": { "state": "translated", "value": "レンダリングまたはページ付けの失敗" }},
+        "ko": { "stringUnit": { "state": "translated", "value": "렌더링 또는 페이지 매김 실패" }},
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Falha na renderização ou paginação" }},
+        "ru": { "stringUnit": { "state": "translated", "value": "Сбой при визуализации или разбивке на страницы" }},
+        "uk": { "stringUnit": { "state": "translated", "value": "Помилка рендерингу або розбиття на сторінки" }},
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "渲染或分页失败" }}
+      }
     },
-    "Select a different date range that contains entries." : {
-      "comment" : "Suggestion shown when no data is available for export."
+    "Select a different date range that contains entries.": {
+      "comment": "Suggestion shown when no data is available for export.",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Wähle einen anderen Datumsbereich mit Einträgen aus." }},
+        "es": { "stringUnit": { "state": "translated", "value": "Selecciona un rango de fechas diferente que contenga registros." }},
+        "fr": { "stringUnit": { "state": "translated", "value": "Sélectionnez une autre plage de dates contenant des entrées." }},
+        "it": { "stringUnit": { "state": "translated", "value": "Seleziona un intervallo di date diverso che contenga voci." }},
+        "ja": { "stringUnit": { "state": "translated", "value": "エントリを含む別の日付範囲を選択してください。" }},
+        "ko": { "stringUnit": { "state": "translated", "value": "항목이 포함된 다른 날짜 범위를 선택하세요." }},
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Selecione um intervalo de datas diferente que contenha entradas." }},
+        "ru": { "stringUnit": { "state": "translated", "value": "Выберите другой диапазон дат, содержащий записи." }},
+        "uk": { "stringUnit": { "state": "translated", "value": "Виберіть інший діапазон дат, що містить записи." }},
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "选择包含条目的其他日期范围。" }}
+      }
     },
-    "The PDF export could not start because the rendering context failed to initialise." : {
-      "comment" : "Detailed explanation shown when the PDF context cannot be created."
+    "The PDF export could not start because the rendering context failed to initialise.": {
+      "comment": "Detailed explanation shown when the PDF context cannot be created.",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Der PDF-Export konnte nicht gestartet werden, da der Rendering-Kontext nicht initialisiert werden konnte." }},
+        "es": { "stringUnit": { "state": "translated", "value": "No se pudo iniciar la exportación de PDF porque no se pudo inicializar el contexto de renderizado." }},
+        "fr": { "stringUnit": { "state": "translated", "value": "L’exportation PDF n’a pas pu démarrer car le contexte de rendu n’a pas pu être initialisé." }},
+        "it": { "stringUnit": { "state": "translated", "value": "L’esportazione in PDF non può iniziare perché il contesto di rendering non è stato inizializzato." }},
+        "ja": { "stringUnit": { "state": "translated", "value": "レンダリングコンテキストを初期化できなかったため、PDF 書き出しを開始できませんでした。" }},
+        "ko": { "stringUnit": { "state": "translated", "value": "렌더링 컨텍스트를 초기화하지 못해 PDF 내보내기를 시작할 수 없습니다." }},
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "A exportação de PDF não pôde ser iniciada porque o contexto de renderização falhou ao inicializar." }},
+        "ru": { "stringUnit": { "state": "translated", "value": "Не удалось начать экспорт PDF, так как контекст визуализации не инициализирован." }},
+        "uk": { "stringUnit": { "state": "translated", "value": "Не вдалося розпочати експорт PDF, оскільки контекст рендерингу не ініціалізувався." }},
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "由于渲染上下文初始化失败，无法开始 PDF 导出。" }}
+      }
     },
-    "There are no records available in the selected date range. Try choosing a different date or range to export." : {
-      "comment" : "Detailed explanation shown when the user tries to export with no data."
+    "There are no records available in the selected date range. Try choosing a different date or range to export.": {
+      "comment": "Detailed explanation shown when the user tries to export with no data.",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Im ausgewählten Datumsbereich sind keine Datensätze verfügbar. Wähle ein anderes Datum oder einen anderen Bereich zum Exportieren." }},
+        "es": { "stringUnit": { "state": "translated", "value": "No hay registros disponibles en el rango de fechas seleccionado. Intenta elegir una fecha o un rango diferente para exportar." }},
+        "fr": { "stringUnit": { "state": "translated", "value": "Aucun enregistrement disponible pour la plage de dates sélectionnée. Essayez de choisir une autre date ou une autre plage pour exporter." }},
+        "it": { "stringUnit": { "state": "translated", "value": "Non ci sono record disponibili nell’intervallo di date selezionato. Prova a scegliere una data o un intervallo diverso per l’esportazione." }},
+        "ja": { "stringUnit": { "state": "translated", "value": "選択した日付範囲に利用できる記録がありません。別の日付または範囲を選択してエクスポートしてください。" }},
+        "ko": { "stringUnit": { "state": "translated", "value": "선택한 날짜 범위에 사용할 수 있는 기록이 없습니다. 다른 날짜나 범위를 선택하여 내보내세요." }},
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Não há registros disponíveis no intervalo de datas selecionado. Tente escolher uma data ou intervalo diferente para exportar." }},
+        "ru": { "stringUnit": { "state": "translated", "value": "В выбранном диапазоне дат нет доступных записей. Попробуйте выбрать другую дату или диапазон для экспорта." }},
+        "uk": { "stringUnit": { "state": "translated", "value": "У вибраному діапазоні дат немає доступних записів. Спробуйте вибрати іншу дату або діапазон для експорту." }},
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "所选日期范围内没有可用记录。请尝试选择其他日期或范围进行导出。" }}
+      }
     },
-    "Try re-exporting or restarting the app." : {
-      "comment" : "Suggestion shown when PDF rendering fails."
+    "Try re-exporting or restarting the app.": {
+      "comment": "Suggestion shown when PDF rendering fails.",
+      "localizations": {
+        "de": { "stringUnit": { "state": "translated", "value": "Versuche den Export erneut oder starte die App neu." }},
+        "es": { "stringUnit": { "state": "translated", "value": "Intenta exportar nuevamente o reinicia la aplicación." }},
+        "fr": { "stringUnit": { "state": "translated", "value": "Essayez de réexporter ou de redémarrer l’application." }},
+        "it": { "stringUnit": { "state": "translated", "value": "Prova a riesportare o a riavviare l’app." }},
+        "ja": { "stringUnit": { "state": "translated", "value": "再度エクスポートするか、アプリを再起動してみてください。" }},
+        "ko": { "stringUnit": { "state": "translated", "value": "다시 내보내거나 앱을 재시작하세요." }},
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Tente exportar novamente ou reinicie o aplicativo." }},
+        "ru": { "stringUnit": { "state": "translated", "value": "Попробуйте повторно выполнить экспорт или перезапустить приложение." }},
+        "uk": { "stringUnit": { "state": "translated", "value": "Спробуйте експортувати ще раз або перезапустіть застосунок." }},
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "请重试导出或重新启动应用。" }}
+      }
     }
   },
-  "version" : "1.1"
+  "version": "1.1"
 }
