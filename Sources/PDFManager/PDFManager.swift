@@ -22,10 +22,6 @@ public final class PDFManager {
     @ObservationIgnored
     private let logger: SimpleLogger
 
-    /// The bundle associated with the current Swift Package module.
-    @ObservationIgnored
-    public let module: Bundle = .module
-
     /// A structure representing the measured layout dimensions of a PDF page.
     ///
     /// This includes the height of the header, footer, and available content area.
