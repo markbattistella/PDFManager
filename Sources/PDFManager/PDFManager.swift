@@ -57,6 +57,8 @@ extension PDFManager {
     ///   - items: The data elements to render into the PDF.
     ///   - config: The PDF layout configuration defining paper size and margins.
     ///   - metadata: Optional metadata to embed into the PDF file (e.g., title, author).
+    ///   - watermark: An optional closure returning an `AnyView` to overlay on every page. The view
+    ///     spans the full paper dimensions and sits above header, content, and footer.
     ///   - header: A view builder returning the header for each page. Receives the current and total page numbers.
     ///   - content: A view builder rendering the main content from the provided items.
     ///   - footer: A view builder returning the footer for each page. Receives the current and total page numbers.
@@ -66,6 +68,7 @@ extension PDFManager {
         _ items: [T],
         config: PDFConfiguration,
         metadata: PDFMetadata? = nil,
+        watermark: (() -> AnyView)? = nil,
         @ViewBuilder header: @escaping (_ currentPage: Int, _ totalPages: Int) -> H,
         @ViewBuilder content: @escaping (_ items: [T]) -> C,
         @ViewBuilder footer: @escaping (_ currentPage: Int, _ totalPages: Int) -> F
@@ -109,6 +112,7 @@ extension PDFManager {
             pages: pages,
             pdf: pdf,
             config: config,
+            watermark: watermark,
             header: header,
             content: content,
             footer: footer
@@ -305,6 +309,7 @@ extension PDFManager {
     ///   - pages: The grouped content items for each page.
     ///   - pdf: The current PDF drawing context.
     ///   - config: The layout configuration defining page size and margins.
+    ///   - watermark: An optional closure returning an `AnyView` overlaid on every page.
     ///   - header: A view builder rendering each page’s header.
     ///   - content: A view builder rendering the page’s main content.
     ///   - footer: A view builder rendering each page’s footer.
@@ -312,6 +317,7 @@ extension PDFManager {
         pages: [[T]],
         pdf: CGContext,
         config: PDFConfiguration,
+        watermark: (() -> AnyView)? = nil,
         header: @escaping (_ currentPage: Int, _ totalPages: Int) -> H,
         content: @escaping (_ items: [T]) -> C,
         footer: @escaping (_ currentPage: Int, _ totalPages: Int) -> F
@@ -330,6 +336,7 @@ extension PDFManager {
                 currentPage: currentPage,
                 totalPages: totalPages,
                 config: config,
+                watermark: watermark,
                 header: header,
                 content: content,
                 footer: footer
@@ -345,6 +352,7 @@ extension PDFManager {
     ///   - currentPage: The current page index.
     ///   - totalPages: The total number of pages in the document.
     ///   - config: The PDF layout configuration.
+    ///   - watermark: An optional closure returning an `AnyView` overlaid across the full page.
     ///   - header: A view builder rendering the header.
     ///   - content: A view builder rendering the page’s main content.
     ///   - footer: A view builder rendering the footer.
@@ -354,6 +362,7 @@ extension PDFManager {
         currentPage: Int,
         totalPages: Int,
         config: PDFConfiguration,
+        watermark: (() -> AnyView)? = nil,
         header: @escaping (_ currentPage: Int, _ totalPages: Int) -> H,
         content: @escaping (_ items: [T]) -> C,
         footer: @escaping (_ currentPage: Int, _ totalPages: Int) -> F
@@ -361,7 +370,7 @@ extension PDFManager {
         pdf.beginPDFPage(nil)
         logger.debug("Begin render for page \(currentPage)/\(totalPages)")
 
-        let pageView = PDFPage {
+        let baseView = PDFPage {
             header(currentPage, totalPages)
         } content: {
             content(items)
@@ -371,7 +380,13 @@ extension PDFManager {
             .padding(config.paperMargin)
             .frame(width: config.paperSize.width, height: config.paperSize.height)
 
-        let renderer = ImageRenderer(content: pageView)
+        let renderer = ImageRenderer(content: Group {
+            if let watermark {
+                baseView.overlay { watermark().allowsHitTesting(false) }
+            } else {
+                baseView
+            }
+        })
         renderer.render { _, context in context(pdf) }
 
         pdf.endPDFPage()

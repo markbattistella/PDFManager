@@ -10,6 +10,7 @@ import SwiftUI
 
 /// A view type that defines the header section for each page in a generated PDF. Conforming types
 /// render content displayed at the top of each PDF page.
+@MainActor
 public protocol PDFHeader: View {
 
     /// The index of the page currently being rendered in the PDF output.
@@ -21,11 +22,11 @@ public protocol PDFHeader: View {
     /// The total number of pages in the generated PDF document.
     ///
     /// Use this value in conjunction with `currentPage` to display pagination details, for
-    /// example, “Page 1 of 10”.
+    /// example, "Page 1 of 10".
     var totalPages: Int { get }
 }
 
-extension PDFHeader {
+public extension PDFHeader {
 
     /// Default implementation returning `0` when no page context is provided.
     var currentPage: Int { 0 }
@@ -38,6 +39,7 @@ extension PDFHeader {
 
 /// A view type that defines the main content section for a page in a generated PDF. Conforming
 /// types render the core page body content.
+@MainActor
 public protocol PDFContent: View {
     associatedtype T: Identifiable
     init(items: [T])
@@ -47,6 +49,7 @@ public protocol PDFContent: View {
 
 /// A view type that defines the footer section for each page in a generated PDF. Conforming
 /// types render content displayed at the bottom of each PDF page.
+@MainActor
 public protocol PDFFooter: View {
 
     /// The index of the page currently being rendered in the PDF output.
@@ -58,4 +61,13 @@ public protocol PDFFooter: View {
     ///
     /// Use this value to render pagination or document-wide context information.
     var totalPages: Int { get }
+}
+
+public extension PDFFooter {
+
+    /// Default implementation returning `0` when no page context is provided.
+    var currentPage: Int { 0 }
+
+    /// Default implementation returning `0` when total page count is unavailable.
+    var totalPages: Int { 0 }
 }
