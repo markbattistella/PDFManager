@@ -107,6 +107,9 @@
 				Base,
 			);
 			mainGroup = E2F3A4B5C6D7165800F1234A;
+			packageReferences = (
+				E2F3A4B5C6D7205800F1234A /* XCLocalSwiftPackageReference ".." */,
+			);
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E2F3A4B5C6D7175800F1234A /* Products */;
@@ -347,9 +350,17 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		E2F3A4B5C6D7205800F1234A /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		E2F3A4B5C6D71F5800F1234A /* PDFManager */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = E2F3A4B5C6D7205800F1234A /* XCLocalSwiftPackageReference ".." */;
 			productName = PDFManager;
 		};
 /* End XCSwiftPackageProductDependency section */

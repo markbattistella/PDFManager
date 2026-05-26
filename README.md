@@ -22,13 +22,18 @@
 - **PDF metadata:** Embed title, author, subject, keywords, and encryption settings into the file.
 - **Typed errors:** `PDFExportError` provides localised titles, descriptions, and recovery suggestions.
 
+## Requirements
+
+- Swift 6.0+
+- iOS 18+, macOS 15+, tvOS 18+, watchOS 11+, visionOS 2+
+
 ## Installation
 
 Add `PDFManager` to your Swift project using Swift Package Manager.
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/markbattistella/PDFManager", from: "1.0.0")
+  .package(url: "https://github.com/markbattistella/PDFManager", from: "1.0.8")
 ]
 ```
 
@@ -235,4 +240,4 @@ Contributions are always welcome! Feel free to submit a pull request or open an 
 
 ## License
 
-`PDFManager` is licensed under the MIT License. See the LICENCE file for more details.
+`PDFManager` is licensed under the MIT License. See the LICENSE file for more details.
