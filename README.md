@@ -92,7 +92,7 @@ struct InvoiceHeader: PDFHeader {
 
 #### Content
 
-`PDFContent` requires an `init(items:)` initialiser. The package calls this once per page with the subset of items that fit.
+`PDFContent` requires an `init(items:)` initialiser. The supplied content builder is called repeatedly with candidate groups during measurement, then with the final items for each page. Keep builders deterministic and free of side effects. Their height must not decrease as more items are added, because pagination uses binary search.
 
 ```swift
 struct InvoiceContent: PDFContent {
@@ -152,7 +152,9 @@ let config = PDFConfiguration(
 
 ### 4. Export
 
-Create a `PDFManager` instance and call `export`. It returns the URL of the generated file in the system's temporary directory.
+Create a `PDFManager` instance and call `export` on the main actor. Layout, view builders, and rendering are main-actor isolated. Export is synchronous: wrapping it in a `Task` does not move it off the main actor. `PDFConfiguration` and `PDFMetadata` are `Sendable` values.
+
+The returned PDF is in a unique subdirectory of the system's temporary directory. Exports with the same title keep the same readable filename without overwriting previous files. Keep that directory while a preview or share operation needs the file, then remove it when you are finished.
 
 ```swift
 @State private var manager = PDFManager()
@@ -215,6 +217,10 @@ PDFMetadata(
 
 All parameters are optional. By default the author is pulled from `CFBundleDisplayName` and printing and copying are both allowed.
 
+An owner password is required when you request a user password or disable printing or copying. Core Graphics does not encrypt the document without an owner password, so PDFManager rejects those combinations instead of returning an unprotected file.
+
+The underlying Core Graphics PDF API accepts ASCII passwords of at most 32 bytes. PDFManager rejects longer, non-ASCII, or NUL-containing passwords instead of allowing truncation or a context creation failure. An explicit encryption key length must be a multiple of eight between 40 and 128; PDFManager defaults to 128. Passing `nil` uses the Core Graphics default of 40. These are constraints of this PDF context API, not a general encryption recommendation. See Apple's [password documentation](https://developer.apple.com/documentation/coregraphics/kcgpdfcontextownerpassword) and [key-length documentation](https://developer.apple.com/documentation/coregraphics/kcgpdfcontextencryptionkeylength).
+
 ### Error handling
 
 `PDFExportError` conforms to `LocalizedError` and provides:
@@ -222,8 +228,8 @@ All parameters are optional. By default the author is pulled from `CFBundleDispl
 | Case | Meaning |
 | --- | --- |
 | `.noItems` | The items array was empty |
-| `.contextCreationFailed` | Core Graphics could not create the PDF context |
-| `.renderingFailed` | Pagination or rendering produced no pages |
+| `.contextCreationFailed` | The temporary directory or PDF context could not be created, or password settings were invalid |
+| `.renderingFailed` | Page geometry was invalid, content could not fit, or layout/rendering failed |
 
 Each case exposes `errorTitle`, `errorDescription`, `failureReason`, and `recoverySuggestion` for use in alerts or logs.
 
@@ -233,6 +239,15 @@ Each case exposes `errorTitle`, `errorDescription`, `failureReason`, and `recove
     print(error.errorDescription!)   // "There are no records available..."
 }
 ```
+
+## Layout limits
+
+- Paper dimensions must be finite and positive. Margins must be finite and nonnegative and leave a positive printable area.
+- Header and footer heights are checked for each page at the actual page count. Pagination repeats if their required space grows, reserving the largest measured height for each section across all pages.
+- An item taller than the remaining content area throws `.renderingFailed`. Split that item in your data or change the document layout; the exporter does not crop it or shrink it silently.
+- Measurement and rendering use the same light colour scheme and printable width. Supply any additional environment settings consistently in your document views.
+- Use eager stacks and already-loaded data and images. `ImageRenderer` cannot capture every view, including many web, media, UIKit, and AppKit views; unsupported content can produce a placeholder.
+- Large documents still require main-actor layout and drawing. This API does not currently provide progress or asynchronous cancellation.
 
 ## Contributing
 

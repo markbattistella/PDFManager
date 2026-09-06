@@ -83,6 +83,26 @@ public struct PDFMetadata: Sendable {
 
 extension PDFMetadata {
 
+  /// Rejects settings that Core Graphics cannot honour exactly.
+  ///
+  /// The PDF context API accepts ASCII passwords up to 32 bytes. Longer passwords are otherwise
+  /// silently truncated. Its documented key lengths are multiples of eight from 40 through 128.
+  internal var hasValidSecuritySettings: Bool {
+    // Without an owner password, Core Graphics ignores user-password and permission requests.
+    if userPassword != nil || allowsPrinting == false || allowsCopying == false {
+      guard let ownerPassword, !ownerPassword.isEmpty else { return false }
+    }
+    for password in [ownerPassword, userPassword].compactMap({ $0 }) {
+      guard password.utf8.count <= 32,
+            password.utf8.allSatisfy({ $0 > 0 && $0 < 128 }) else { return false }
+    }
+    if let encryptionKeyLength {
+      guard (40...128).contains(encryptionKeyLength),
+            encryptionKeyLength.isMultiple(of: 8) else { return false }
+    }
+    return true
+  }
+
   /// Returns the metadata as a Core Foundation dictionary suitable for use with PDF context
   /// creation.
   ///

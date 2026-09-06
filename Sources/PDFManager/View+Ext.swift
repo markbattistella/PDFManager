@@ -17,8 +17,13 @@ extension View {
     /// - Parameter width: The fixed width used to measure the view’s height.
     /// - Returns: The rendered height of the view at the specified width.
     internal func measureHeight(width: CGFloat) -> CGFloat {
-        var output: CGFloat = 0
-        ImageRenderer(content: self.frame(width: width))
+        var output: CGFloat = .nan
+        ImageRenderer(
+            content: VStack(spacing: 0) { self }
+                .frame(width: width)
+                .fixedSize(horizontal: false, vertical: true)
+                .environment(\.colorScheme, .light)
+        )
             .render { size, _ in output = size.height }
         return output
     }

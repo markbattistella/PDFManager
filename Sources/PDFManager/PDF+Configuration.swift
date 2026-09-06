@@ -32,6 +32,16 @@ public struct PDFConfiguration: Sendable {
 
 extension PDFConfiguration {
 
+  /// Whether the configuration leaves a finite, positive printable area.
+  internal var isValid: Bool {
+    let margins = [paperMargin.top, paperMargin.leading, paperMargin.bottom, paperMargin.trailing]
+    return paperSize.width.isFinite && paperSize.height.isFinite
+      && paperSize.width > 0 && paperSize.height > 0
+      && margins.allSatisfy { $0.isFinite && $0 >= 0 }
+      && maxContentWidth.isFinite && maxContentWidth > 0
+      && maxContentHeight.isFinite && maxContentHeight > 0
+  }
+
   /// The maximum vertical space available for content after subtracting the top and bottom
   /// margins.
   internal var maxContentHeight: CGFloat {

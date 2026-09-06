@@ -9,35 +9,25 @@ import SimpleLogger
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// A manager responsible for generating and exporting PDF documents from SwiftUI views.
+/// Generates PDF documents by measuring and rendering SwiftUI views on the main actor.
 ///
-/// `PDFManager` handles layout calculation, pagination, rendering, and file export for structured
-/// PDF documents. It combines visual components (headers, content, and footers) into multi-page
-/// PDF outputs with optional metadata and layout configuration.
+/// Export is synchronous. Content builders must provide fully loaded, deterministic views whose
+/// height does not decrease when more items are added. Items are kept together on each page;
+/// an item that cannot fit on a page causes export to throw rather than silently lose content.
 @MainActor
 @Observable
 public final class PDFManager {
 
-  /// A logging instance used for diagnostic or debugging purposes.
   @ObservationIgnored
   private let logger: SimpleLogger
 
-  /// A structure representing the measured layout dimensions of a PDF page.
-  ///
-  /// This includes the height of the header, footer, and available content area.
+  /// Space reserved for each section, shared by every page in one export.
   internal struct PageLayout: Sendable {
-
-    /// The rendered height of the page header.
     let headerHeight: CGFloat
-
-    /// The rendered height of the page footer.
     let footerHeight: CGFloat
-
-    /// The remaining vertical space available for content.
     let contentHeight: CGFloat
   }
 
-  /// Creates a new instance of `PDFManager` with a default logging configuration.
   public init() {
     self.logger = SimpleLogger(category: .pdfProcessing)
     logger.info("PDFManager initialized")
@@ -48,22 +38,25 @@ public final class PDFManager {
 
 extension PDFManager {
 
-  /// Exports a collection of renderable items into a multi-page PDF document.
+  /// Exports items to a PDF with repeating headers, footers, and an optional watermark.
   ///
-  /// The method paginates content automatically based on available layout space
-  /// and combines a header, content, and footer view for each page.
+  /// Layout is measured at the printable width in a light colour scheme. Header and footer
+  /// builders receive one-based page numbers and the final page count. They may be evaluated
+  /// more than once while pagination settles. Content builders are also evaluated repeatedly
+  /// to find the largest prefix of items that fits each page.
   ///
   /// - Parameters:
-  ///   - items: The data elements to render into the PDF.
-  ///   - config: The PDF layout configuration defining paper size and margins.
-  ///   - metadata: Optional metadata to embed into the PDF file (e.g., title, author).
-  ///   - watermark: An optional closure returning an `AnyView` to overlay on every page. The view
-  ///     spans the full paper dimensions and sits above header, content, and footer.
-  ///   - header: A view builder returning the header for each page. Receives the current and total page numbers.
-  ///   - content: A view builder rendering the main content from the provided items.
-  ///   - footer: A view builder returning the footer for each page. Receives the current and total page numbers.
-  ///
-  /// - Returns: The URL of the generated PDF file, or `nil` if the export fails.
+  ///   - items: The identifiable data elements to render.
+  ///   - config: Paper dimensions and nonnegative margins, expressed in points.
+  ///   - metadata: Optional document information and password settings.
+  ///   - watermark: An optional view overlaid across the entire page.
+  ///   - header: A builder for each page's header.
+  ///   - content: A builder for a candidate group of items or a final page of content.
+  ///   - footer: A builder for each page's footer.
+  /// - Returns: A PDF URL in a unique temporary directory. Repeated titles retain the same
+  ///   filename but never overwrite a previously returned export. The caller owns cleanup.
+  /// - Throws: `noItems` for an empty collection, `renderingFailed` for invalid or overflowing
+  ///   layouts, or `contextCreationFailed` when the file or PDF context cannot be created.
   public func export<T: Identifiable, H: PDFHeader, F: PDFFooter, C: PDFContent>(
     _ items: [T],
     config: PDFConfiguration,
@@ -73,81 +66,66 @@ extension PDFManager {
     @ViewBuilder content: @escaping (_ items: [T]) -> C,
     @ViewBuilder footer: @escaping (_ currentPage: Int, _ totalPages: Int) -> F
   ) throws(PDFExportError) -> URL where C.T == T {
-    logger.info("Starting PDF export with \(items.count) items")
-    logger.info("Paper size: \(config.paperSize.width)x\(config.paperSize.height)")
-
     guard !items.isEmpty else {
-      logger.error("No items to export")
-      throw PDFExportError.noItems
+      throw .noItems
+    }
+    guard config.isValid else {
+      logger.error("Paper size and margins must leave a finite, positive printable area")
+      throw .renderingFailed
     }
 
     let metadata = metadata ?? PDFMetadata()
+    guard metadata.hasValidSecuritySettings else {
+      logger.error("Unsupported PDF password or encryption key length")
+      throw .contextCreationFailed
+    }
+
+    let (pages, layout) = try preparePages(
+      items, config: config, header: header, content: content, footer: footer
+    )
+
     let url = generateTempURL(fileName: metadata.title)
+    let directory = url.deletingLastPathComponent()
+    var succeeded = false
+    defer {
+      if !succeeded {
+        try? FileManager.default.removeItem(at: directory)
+      }
+    }
+
+    do {
+      try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
+    } catch {
+      logger.error("Failed to create the temporary export directory")
+      throw .contextCreationFailed
+    }
+
     var box = CGRect(origin: .zero, size: config.paperSize)
-
     guard let pdf = createPDFContext(url: url, box: &box, metadata: metadata) else {
-      logger.error("Failed to create PDF context")
-      throw PDFExportError.contextCreationFailed
+      throw .contextCreationFailed
     }
+    // Registered after directory cleanup so the context closes before a failed file is removed.
+    defer { pdf.closePDF() }
 
-    let layout = calculatePageLayout(
-      config: config,
-      header: header,
-      footer: footer
+    try renderPages(
+      pages: pages, pdf: pdf, config: config, layout: layout, watermark: watermark,
+      header: header, content: content, footer: footer
     )
 
-    let pages = paginateItems(
-      items,
-      availableWidth: config.maxContentWidth,
-      availableHeight: layout.contentHeight,
-      content: content
-    )
-
-    guard !pages.isEmpty else {
-      logger.error("Pagination failed to produce pages")
-      throw PDFExportError.renderingFailed
-    }
-
-    renderPages(
-      pages: pages,
-      pdf: pdf,
-      config: config,
-      watermark: watermark,
-      header: header,
-      content: content,
-      footer: footer
-    )
-
-    pdf.closePDF()
-    logger.info("PDF export complete: \(pages.count) pages written to \(url.lastPathComponent)")
-
+    succeeded = true
+    logger.info("PDF export complete: \(pages.count) pages at \(url.lastPathComponent)")
     return url
   }
 }
 
-// MARK: - Private Methods
+// MARK: - File creation
 
 extension PDFManager {
 
-  // MARK: URL Generation
-
-  /// Generates a temporary file URL for a PDF document.
+  /// Creates a unique path without creating a file or directory.
   ///
-  /// - Behaviour:
-  ///   - If a `fileName` is provided, it is sanitised for filesystem safety by replacing invalid
-  ///   characters and trimming whitespace.
-  ///   - If `fileName` is `nil` or empty after sanitisation, a random UUID string is used
-  ///   instead to ensure uniqueness.
-  ///   - The `.pdf` file extension is normalised and automatically appended when omitted.
-  ///   - The file is placed in the system’s temporary directory.
-  ///   - Logs the resolved path for diagnostic purposes.
-  ///
-  /// - Parameter fileName: An optional base name for the file. If omitted or invalid, a UUID is
-  /// used as the filename.
-  ///
-  /// - Returns: A temporary file `URL` ending in `.pdf`, safe for use in file creation.
-  ///
-  /// - Note: The file is not created on disk by this method—only the URL is returned.
+  /// Keeping the title in the filename makes sharing useful while a unique parent directory
+  /// prevents later exports with the same title from overwriting earlier files.
   internal func generateTempURL(fileName: String? = nil) -> URL {
     let baseName: String
     if let name = fileName?.sanitizeURL.deletingPDFExtension, !name.isEmpty {
@@ -156,100 +134,123 @@ extension PDFManager {
       baseName = UUID().uuidString
     }
 
-    let fullName = "\(baseName).pdf"
-    let url = URL.temporaryDirectory.appendingPathComponent(fullName, conformingTo: .pdf)
-    logger.debug("Generated temporary PDF path: \(url.path(percentEncoded: false))")
-    return url
+    return URL.temporaryDirectory
+      .appending(path: "PDFManager-\(UUID().uuidString)", directoryHint: .isDirectory)
+      .appendingPathComponent("\(baseName).pdf", conformingTo: .pdf)
   }
 
-  // MARK: PDF Setup
-
-  /// Creates a new PDF graphics context for rendering.
-  ///
-  /// - Parameters:
-  ///   - url: The destination file URL for the PDF.
-  ///   - box: The bounding rectangle defining the PDF page size.
-  ///   - metadata: Optional metadata to embed in the PDF document.
-  /// - Returns: A configured `CGContext` instance or `nil` if creation fails.
   internal func createPDFContext(
-    url: URL,
-    box: inout CGRect,
-    metadata: PDFMetadata?
+    url: URL, box: inout CGRect, metadata: PDFMetadata?
   ) -> CGContext? {
-    let pdfMetadata = metadata?.asDictionary
-    guard let context = CGContext(url as CFURL, mediaBox: &box, pdfMetadata) else {
-      logger.error("Failed to create CGContext for PDF at \(url.lastPathComponent)")
-      return nil
+    CGContext(url as CFURL, mediaBox: &box, metadata?.asDictionary)
+  }
+}
+
+// MARK: - Measurement and pagination
+
+extension PDFManager {
+
+  /// Repeats pagination when the actual page count changes header or footer sizes.
+  ///
+  /// Reservations only grow between passes, preventing a layout that alternates between two
+  /// page counts. There can be at most one page per item before an oversized item is rejected.
+  private func preparePages<T: Identifiable, H: PDFHeader, F: PDFFooter, C: PDFContent>(
+    _ items: [T],
+    config: PDFConfiguration,
+    header: (Int, Int) -> H,
+    content: ([T]) -> C,
+    footer: (Int, Int) -> F
+  ) throws(PDFExportError) -> ([[T]], PageLayout) where C.T == T {
+    var totalPages = 1
+    var headerHeight: CGFloat = 0
+    var footerHeight: CGFloat = 0
+
+    for _ in 0..<items.count {
+      let measured = try calculatePageLayout(
+        config: config, totalPages: totalPages, header: header, footer: footer
+      )
+      headerHeight = max(headerHeight, measured.headerHeight)
+      footerHeight = max(footerHeight, measured.footerHeight)
+      let contentHeight = config.maxContentHeight - headerHeight - footerHeight
+      guard contentHeight.isFinite, contentHeight > 0 else {
+        throw .renderingFailed
+      }
+      let layout = PageLayout(
+        headerHeight: headerHeight, footerHeight: footerHeight, contentHeight: contentHeight
+      )
+      let pages = try paginateItems(
+        items, availableWidth: config.maxContentWidth,
+        availableHeight: contentHeight, content: content
+      )
+      if pages.count == totalPages {
+        return (pages, layout)
+      }
+      guard pages.count > totalPages else {
+        logger.error("Content measurement changed unexpectedly between pagination passes")
+        throw .renderingFailed
+      }
+      totalPages = pages.count
     }
-    return context
+
+    throw .renderingFailed
   }
 
-  // MARK: - Calculation Logic
-
-  /// Measures the layout heights for the header, footer, and content areas of a PDF page.
-  ///
-  /// - Parameters:
-  ///   - config: The PDF layout configuration defining available size and margins.
-  ///   - header: A view builder returning the header view.
-  ///   - footer: A view builder returning the footer view.
-  /// - Returns: A `PageLayout` structure containing height metrics for layout computation.
+  /// Measures the tallest header and footer across the proposed page count.
   internal func calculatePageLayout<H: PDFHeader, F: PDFFooter>(
     config: PDFConfiguration,
-    header: @escaping (_ currentPage: Int, _ totalPages: Int) -> H,
-    footer: @escaping (_ currentPage: Int, _ totalPages: Int) -> F
-  ) -> PageLayout {
-    logger.debug(
-      "Calculating layout for paper size: \(config.paperSize.width)x\(config.paperSize.height)")
+    totalPages: Int = 1,
+    header: (Int, Int) -> H,
+    footer: (Int, Int) -> F
+  ) throws(PDFExportError) -> PageLayout {
+    guard totalPages > 0 else { throw .renderingFailed }
+    var headerHeight: CGFloat = 0
+    var footerHeight: CGFloat = 0
 
-    let sampleHeader = header(1, 1)
-    let sampleFooter = footer(1, 1)
+    for page in 1...totalPages {
+      let measuredHeader = header(page, totalPages).measureHeight(width: config.maxContentWidth)
+      let measuredFooter = footer(page, totalPages).measureHeight(width: config.maxContentWidth)
+      guard measuredHeader.isFinite, measuredHeader >= 0,
+            measuredFooter.isFinite, measuredFooter >= 0 else {
+        throw .renderingFailed
+      }
+      headerHeight = max(headerHeight, measuredHeader)
+      footerHeight = max(footerHeight, measuredFooter)
+    }
 
-    let headerHeight = sampleHeader.measureHeight(width: config.maxContentWidth)
-    let footerHeight = sampleFooter.measureHeight(width: config.maxContentWidth)
     let contentHeight = config.maxContentHeight - headerHeight - footerHeight
-
-    logger.debug("Calculated layout - header: \(headerHeight.rounded())")
-    logger.debug("Calculated layout - content: \(contentHeight.rounded())")
-    logger.debug("Calculated layout - footer: \(footerHeight.rounded())")
-
+    guard contentHeight.isFinite, contentHeight > 0 else {
+      logger.error("Headers and footers leave no room for content")
+      throw .renderingFailed
+    }
     return PageLayout(
-      headerHeight: headerHeight,
-      footerHeight: footerHeight,
-      contentHeight: contentHeight
+      headerHeight: headerHeight, footerHeight: footerHeight, contentHeight: contentHeight
     )
   }
 
-  /// Determines the maximum number of items that can fit on a single PDF page.
+  /// Finds the largest fitting prefix using binary search.
   ///
-  /// Uses binary search to optimise layout measurement and reduce rendering overhead.
-  ///
-  /// - Parameters:
-  ///   - items: The slice of items to evaluate.
-  ///   - usableWidth: The width available for rendering content.
-  ///   - usableHeight: The maximum vertical space for content.
-  ///   - content: A view builder used to measure content height.
-  /// - Returns: The maximum number of items that fit within the given height constraint.
+  /// The content's measured height must be nondecreasing as items are added. A zero result means
+  /// that even the first item cannot fit; the caller must reject it instead of forcing it onto a page.
   internal func maxItemsThatFitOnPage<T: Identifiable, C: PDFContent>(
     for items: ArraySlice<T>,
     usableWidth: CGFloat,
     usableHeight: CGFloat,
-    content: @escaping (_ items: [T]) -> C
-  ) -> Int where C.T == T {
-
-    guard !items.isEmpty else {
-      logger.info("Ignoring empty item array for pagination calculation.")
-      return 0
+    content: ([T]) -> C
+  ) throws(PDFExportError) -> Int where C.T == T {
+    guard usableWidth.isFinite, usableWidth > 0,
+          usableHeight.isFinite, usableHeight > 0 else {
+      throw .renderingFailed
     }
+    guard !items.isEmpty else { return 0 }
 
     var low = 1
     var high = items.count
-    var bestFit = 1
+    var bestFit = 0
 
     while low <= high {
-      let mid = (low + high) / 2
-      let candidate = Array(items.prefix(mid))
-      let height = content(candidate).measureHeight(width: usableWidth)
-
+      let mid = low + (high - low) / 2
+      let height = content(Array(items.prefix(mid))).measureHeight(width: usableWidth)
+      guard height.isFinite, height >= 0 else { throw .renderingFailed }
       if height <= usableHeight {
         bestFit = mid
         low = mid + 1
@@ -257,142 +258,110 @@ extension PDFManager {
         high = mid - 1
       }
     }
-
-    logger.debug(
-      "Max items that fit: \(bestFit) of \(items.count) (height limit: \(usableHeight.rounded()))")
-
     return bestFit
   }
 
-  // MARK: Pagination
-
-  /// Divides an array of items into pages based on available layout space.
-  ///
-  /// - Parameters:
-  ///   - items: The complete list of renderable items.
-  ///   - availableWidth: The width available for content rendering.
-  ///   - availableHeight: The vertical space available for each page’s content.
-  ///   - content: A view builder used for measuring content height.
-  /// - Returns: A two-dimensional array where each inner array represents one page of content.
   internal func paginateItems<T: Identifiable, C: PDFContent>(
     _ items: [T],
     availableWidth: CGFloat,
     availableHeight: CGFloat,
-    content: @escaping (_ items: [T]) -> C
-  ) -> [[T]] where C.T == T {
+    content: ([T]) -> C
+  ) throws(PDFExportError) -> [[T]] where C.T == T {
     var remaining = ArraySlice(items)
     var pages: [[T]] = []
 
     while !remaining.isEmpty {
-      let itemCount = maxItemsThatFitOnPage(
-        for: remaining,
-        usableWidth: availableWidth,
-        usableHeight: availableHeight,
-        content: content
+      let count = try maxItemsThatFitOnPage(
+        for: remaining, usableWidth: availableWidth, usableHeight: availableHeight, content: content
       )
-      let chunk = Array(remaining.prefix(itemCount))
-      pages.append(chunk)
-      remaining.removeFirst(itemCount)
+      guard count > 0 else {
+        logger.error("An item is taller than the available content area")
+        throw .renderingFailed
+      }
+      pages.append(Array(remaining.prefix(count)))
+      remaining.removeFirst(count)
     }
-
-    logger.info("Pagination complete: \(pages.count) pages generated.")
-    for (index, chunk) in pages.enumerated() {
-      logger.debug("Page \(index + 1): \(chunk.count) items")
-    }
-
     return pages
   }
+}
 
-  // MARK: - Rendering
+// MARK: - Rendering
 
-  /// Renders all pages of a PDF document sequentially.
-  ///
-  /// - Parameters:
-  ///   - pages: The grouped content items for each page.
-  ///   - pdf: The current PDF drawing context.
-  ///   - config: The layout configuration defining page size and margins.
-  ///   - watermark: An optional closure returning an `AnyView` overlaid on every page.
-  ///   - header: A view builder rendering each page’s header.
-  ///   - content: A view builder rendering the page’s main content.
-  ///   - footer: A view builder rendering each page’s footer.
+extension PDFManager {
+
   internal func renderPages<T: Identifiable, H: PDFHeader, F: PDFFooter, C: PDFContent>(
     pages: [[T]],
     pdf: CGContext,
     config: PDFConfiguration,
+    layout: PageLayout,
     watermark: (() -> AnyView)? = nil,
-    header: @escaping (_ currentPage: Int, _ totalPages: Int) -> H,
-    content: @escaping (_ items: [T]) -> C,
-    footer: @escaping (_ currentPage: Int, _ totalPages: Int) -> F
-  ) where C.T == T {
-    let totalPages = pages.count
-    logger.info("Rendering \(pages.count) total pages.")
-
+    header: (Int, Int) -> H,
+    content: ([T]) -> C,
+    footer: (Int, Int) -> F
+  ) throws(PDFExportError) where C.T == T {
     for (index, chunk) in pages.enumerated() {
-      let currentPage = index + 1
-
-      logger.debug("Rendering page \(currentPage)/\(totalPages) with \(chunk.count) items")
-
-      renderSinglePage(
-        pdf: pdf,
-        items: chunk,
-        currentPage: currentPage,
-        totalPages: totalPages,
-        config: config,
-        watermark: watermark,
-        header: header,
-        content: content,
-        footer: footer
+      try renderSinglePage(
+        pdf: pdf, items: chunk, currentPage: index + 1, totalPages: pages.count,
+        config: config, layout: layout, watermark: watermark,
+        header: header, content: content, footer: footer
       )
     }
   }
 
-  /// Renders a single PDF page with header, content, and footer.
-  ///
-  /// - Parameters:
-  ///   - pdf: The active PDF graphics context.
-  ///   - items: The renderable items for this page.
-  ///   - currentPage: The current page index.
-  ///   - totalPages: The total number of pages in the document.
-  ///   - config: The PDF layout configuration.
-  ///   - watermark: An optional closure returning an `AnyView` overlaid across the full page.
-  ///   - header: A view builder rendering the header.
-  ///   - content: A view builder rendering the page’s main content.
-  ///   - footer: A view builder rendering the footer.
   internal func renderSinglePage<T: Identifiable, H: PDFHeader, F: PDFFooter, C: PDFContent>(
     pdf: CGContext,
     items: [T],
     currentPage: Int,
     totalPages: Int,
     config: PDFConfiguration,
+    layout: PageLayout,
     watermark: (() -> AnyView)? = nil,
-    header: @escaping (_ currentPage: Int, _ totalPages: Int) -> H,
-    content: @escaping (_ items: [T]) -> C,
-    footer: @escaping (_ currentPage: Int, _ totalPages: Int) -> F
-  ) where C.T == T {
-    pdf.beginPDFPage(nil)
-    logger.debug("Begin render for page \(currentPage)/\(totalPages)")
+    header: (Int, Int) -> H,
+    content: ([T]) -> C,
+    footer: (Int, Int) -> F
+  ) throws(PDFExportError) where C.T == T {
+    let pageHeader = header(currentPage, totalPages)
+    let pageContent = content(items)
+    let pageFooter = footer(currentPage, totalPages)
 
-    let baseView = PDFPage {
-      header(currentPage, totalPages)
+    // Check the final views too: a builder must not grow after pagination and be silently clipped.
+    let heights = [
+      (pageHeader.measureHeight(width: config.maxContentWidth), layout.headerHeight),
+      (pageContent.measureHeight(width: config.maxContentWidth), layout.contentHeight),
+      (pageFooter.measureHeight(width: config.maxContentWidth), layout.footerHeight),
+    ]
+    guard heights.allSatisfy({ $0.0.isFinite && $0.0 >= 0 && $0.0 <= $0.1 }) else {
+      throw .renderingFailed
+    }
+
+    let page = PDFPage(layout: layout) {
+      pageHeader
     } content: {
-      content(items)
+      pageContent
     } footer: {
-      footer(currentPage, totalPages)
+      pageFooter
     }
     .padding(config.paperMargin)
     .frame(width: config.paperSize.width, height: config.paperSize.height)
+    .overlay {
+      if let watermark {
+        watermark().allowsHitTesting(false)
+      }
+    }
+    .environment(\.colorScheme, .light)
 
-    let renderer = ImageRenderer(
-      content: Group {
-        if let watermark {
-          baseView.overlay { watermark().allowsHitTesting(false) }
-        } else {
-          baseView
-        }
-      })
-    renderer.render { _, context in context(pdf) }
-
-    pdf.endPDFPage()
-    logger.debug("Completed render for page \(currentPage)/\(totalPages)")
+    let renderer = ImageRenderer(content: page)
+    var didRender = false
+    renderer.render { size, draw in
+      guard size.width.isFinite, size.width > 0,
+            size.height.isFinite, size.height > 0 else { return }
+      pdf.beginPDFPage(nil)
+      pdf.saveGState()
+      draw(pdf)
+      pdf.restoreGState()
+      pdf.endPDFPage()
+      didRender = true
+    }
+    guard didRender else { throw .renderingFailed }
   }
 }
