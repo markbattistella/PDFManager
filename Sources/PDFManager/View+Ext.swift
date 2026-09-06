@@ -7,7 +7,6 @@
 import SwiftUI
 
 extension View {
-
     /// Measures the rendered height of a SwiftUI view for a given width.
     ///
     /// This method uses an `ImageRenderer` to draw the view off-screen and determine its resulting
@@ -24,7 +23,7 @@ extension View {
                 .fixedSize(horizontal: false, vertical: true)
                 .environment(\.colorScheme, .light)
         )
-            .render { size, _ in output = size.height }
+        .render { size, _ in output = size.height }
         return output
     }
 }
