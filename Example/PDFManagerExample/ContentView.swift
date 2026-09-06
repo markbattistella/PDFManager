@@ -10,7 +10,7 @@ import PDFManager
 // MARK: - Data model
 
 fileprivate struct ExpenseEntry: Identifiable {
-    let id = UUID()
+    nonisolated let id = UUID()
     let date: Date
     let description: String
     let category: String
@@ -45,7 +45,7 @@ fileprivate struct ExpenseReportHeader: PDFHeader {
 
 // MARK: - PDF Content
 
-fileprivate struct ExpenseReportContent: @MainActor PDFContent {
+fileprivate struct ExpenseReportContent: PDFContent {
     typealias T = ExpenseEntry
     let items: [ExpenseEntry]
 
