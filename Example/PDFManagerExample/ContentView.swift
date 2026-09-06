@@ -122,21 +122,26 @@ fileprivate struct DraftWatermark: View {
 // MARK: - Content View
 
 struct ContentView: View {
-    @State private var manager = PDFManager()
-    @State private var exportedURL: URL?
-    @State private var isDraft = false
-    @State private var exportError: Error?
-    @State private var showError = false
+    @State
+    private var manager = PDFManager()
+    @State
+    private var exportedURL: URL?
+    @State
+    private var isDraft = false
+    @State
+    private var exportError: Error?
+    @State
+    private var showError = false
 
     private let entries: [ExpenseEntry] = {
         let descriptions = [
             "Team lunch", "Flight to conference", "Hotel (3 nights)", "Conference ticket",
             "Software licence", "Office supplies", "Client dinner", "Taxi to airport",
-            "Printing costs", "Mobile bill"
+            "Printing costs", "Mobile bill",
         ]
         let categories = [
             "Meals", "Travel", "Accommodation", "Events",
-            "Software", "Office", "Meals", "Travel", "Office", "Utilities"
+            "Software", "Office", "Meals", "Travel", "Office", "Utilities",
         ]
         let amounts: [Double] = [45.50, 380.00, 630.00, 599.00, 149.99, 32.75, 215.00, 28.50, 67.20, 89.00]
 
@@ -197,7 +202,8 @@ struct ContentView: View {
                 paperMargin: EdgeInsets(top: 36, leading: 36, bottom: 36, trailing: 36)
             )
 
-            let watermark: (() -> AnyView)? = isDraft
+            let watermark: (() -> AnyView)? =
+                isDraft
                 ? { AnyView(DraftWatermark()) }
                 : nil
 
@@ -216,7 +222,8 @@ struct ContentView: View {
                     ExpenseReportFooter()
                 }
             )
-        } catch {
+        }
+        catch {
             exportError = error
             showError = true
         }
