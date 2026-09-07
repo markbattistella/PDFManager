@@ -4,6 +4,7 @@
 // Website: https://markbattistella.com
 //
 
+import QuickLook
 import SwiftUI
 import PDFManager
 
@@ -127,6 +128,8 @@ struct ContentView: View {
     @State
     private var exportedURL: URL?
     @State
+    private var quickLookURL: URL?
+    @State
     private var isDraft = false
     @State
     private var exportError: Error?
@@ -171,21 +174,19 @@ struct ContentView: View {
 
                 if let url = exportedURL {
                     Section("Last Export") {
-                        ShareLink(
-                            item: url,
-                            preview: SharePreview(
-                                url.lastPathComponent,
-                                image: Image(systemName: "doc.richtext")
-                            )
-                        ) {
-                            Label("Share PDF", systemImage: "square.and.arrow.up")
+                        Button {
+                            quickLookURL = url
+                        } label: {
+                            Label("Quick Look PDF", systemImage: "doc.text.magnifyingglass")
                         }
+
                         LabeledContent("File", value: url.lastPathComponent)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
             }
+            .quickLookPreview($quickLookURL)
             .navigationTitle("PDFManager Demo")
             .alert("Export Failed", isPresented: $showError) {
                 Button("OK", role: .cancel) {}
